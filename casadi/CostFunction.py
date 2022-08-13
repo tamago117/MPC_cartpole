@@ -7,10 +7,10 @@ class CostFunction:
         self.nu = 1
         self.x_ref = [0.0, math.pi, 0.0, 0.0]   # target
         # stage cost
-        self.Q  = [2.5, 5.0, 0.01, 0.01]       # state weights
+        self.Q  = [2.5, 0.0, 0.5, 0.5]       # state weights
         self.R  = [0.1]                         # input weights
         # terminal cost
-        self.Qf = [2.5, 10.0, 0.01, 0.01]       # terminal state weights
+        self.Qf = [2.5, 0.0, 0.5, 0.5]       # terminal state weights
 
     def stage_cost(self, x, u):
         cost = 0
