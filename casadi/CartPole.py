@@ -16,8 +16,8 @@ class CartPole:
         f = u[0] #input[N]
 
         #cart acceleration
-        ddy = (f+mp*sin(th)*(l*dth*dth+ga*cos(th))) / (mc+mp*sin(th)*sin(th))
+        ddy = (f+self.mp*sin(th)*(self.l*dth*dth+self.ga*cos(th))) / (self.mc+self.mp*sin(th)*sin(th))
         # pole angle acceleration
-        ddth = (-f*cos(th)-mp*l*dth*dth*cos(th)*sin(th)-(mc+mp)*ga*sin(th)) / (l * (mc+mp*sin(th)*sin(th)))
+        ddth = (-f*cos(th)-self.mp*self.l*dth*dth*cos(th)*sin(th)-(self.mc+self.mp)*self.ga*sin(th)) / (self.l * (self.mc+self.mp*sin(th)*sin(th)))
         
         return dy, dth, ddy, ddth
