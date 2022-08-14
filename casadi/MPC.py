@@ -55,8 +55,13 @@ class MPC:
                               Xk[3] + dXk[3] * dt)
             Xk1 = MX.sym('X_' + str(k+1), nx)
             w   += [Xk1]
+<<<<<<< Updated upstream
             lbw += [-12.5, -inf, -inf, -inf]
             ubw += [12.5, inf, inf, inf]
+=======
+            lbw += [-5, math.pi-0.5, -inf, -inf]
+            ubw += [5, math.pi+0.5, inf, inf]
+>>>>>>> Stashed changes
             w0 += [0.0, 0.0, 0.0, 0.0]
             lam_x0 += [0, 0, 0, 0]
 

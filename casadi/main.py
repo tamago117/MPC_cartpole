@@ -20,7 +20,11 @@ def main():
     cartpole = CartPole()
     mpc = MPC()
     mpc.init()
+<<<<<<< Updated upstream
     x = np.array([0.0, math.pi+0.6, 0.0, 0.0])
+=======
+    x = np.array([0.0, math.pi, 0.0, 6.0])
+>>>>>>> Stashed changes
 
     for step in range(sim_steps):
         if step%(1/sampling_time) == 0:
