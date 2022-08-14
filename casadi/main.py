@@ -1,8 +1,10 @@
 # reference https://gist.github.com/mayataka/7e608dbbbcd93d232cf44e6cab6b0332
 
 import math
+import time
 import matplotlib.pyplot as plt
 import numpy as np
+from casadi import *
 
 from MPC import MPC
 from CostFunction import CostFunction
@@ -20,16 +22,15 @@ def main():
     cartpole = CartPole()
     mpc = MPC()
     mpc.init()
-<<<<<<< Updated upstream
     x = np.array([0.0, math.pi+0.6, 0.0, 0.0])
-=======
-    x = np.array([0.0, math.pi, 0.0, 6.0])
->>>>>>> Stashed changes
 
     for step in range(sim_steps):
         if step%(1/sampling_time) == 0:
             print('t=', step*sampling_time)
+        
+        current_time = time.time()
         u = mpc.solve(x)
+        print(str(math.floor(1/(time.time() - current_time))) + "hz")
         xs.append(x)
         us.append(u)
         x1 = x + sampling_time * np.array(cartpole.dynamics(x, u))
