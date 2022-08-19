@@ -9,8 +9,8 @@ from CartPole import CartPole
 
 class MPC:
     def __init__(self):
-        T = 1.0 # horizon length
-        N = 20 # discreate grid number
+        T = 2.0 # horizon length
+        N = 40 # discreate grid number
         dt = T/N # minute time
         nx = 4 # state variable number
         nu = 1 # input variable number
@@ -55,8 +55,8 @@ class MPC:
                               Xk[3] + dXk[3] * dt)
             Xk1 = MX.sym('X_' + str(k+1), nx)
             w   += [Xk1]
-            lbw += [-12.5, -inf, -inf, -inf]
-            ubw += [12.5, inf, inf, inf]
+            lbw += [-1.0, -inf, -inf, -inf]
+            ubw += [1.0, inf, inf, inf]
             w0 += [0.0, 0.0, 0.0, 0.0]
             lam_x0 += [0, 0, 0, 0]
 
@@ -82,7 +82,7 @@ class MPC:
         self.ubg = ubg
 
         # 非線形計画問題(NLP)
-        self.nlp = {'f': self.J, 'x': self.w, 'g': self.g} 
+        self.nlp = {'f': self.J, 'x': self.w, 'g': self.g}
         # Ipopt ソルバー，最小バリアパラメータを0.1，最大反復回数を5, ウォームスタートをONに
         self.solver = nlpsol('solver', 'ipopt', self.nlp, {'calc_lam_p':True, 'calc_lam_x':True, 'print_time':False, 'ipopt':{'max_iter':5, 'mu_min':0.1, 'warm_start_init_point':'yes', 'print_level':0, 'print_timing_statistics':'no'}})
         # self.solver = nlpsol('solver', 'scpgen', self.nlp, {'calc_lam_p':True, 'calc_lam_x':True, 'qpsol':'qpoases', 'print_time':False, 'print_header':False, 'max_iter':5, 'hessian_approximation':'gauss-newton', 'qpsol_options':{'print_out':False, 'printLevel':'none'}}) # print をオフにしたいがやり方がわからない

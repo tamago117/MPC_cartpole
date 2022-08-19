@@ -14,7 +14,7 @@ sim_time = 10.0
 sampling_time = 0.01 # 100hz
 sim_steps = math.floor(sim_time / sampling_time)
 
-l_bar = 2.0  # length of bar
+l_bar = 0.5  # length of bar
 
 def main():
     xs = []
@@ -22,7 +22,7 @@ def main():
     cartpole = CartPole()
     mpc = MPC()
     mpc.init()
-    x = np.array([0.0, math.pi+0.6, 0.0, 0.0])
+    x = np.array([0.0, 0.0, 0.0, 0.0])
 
     for step in range(sim_steps):
         if step%(1/sampling_time) == 0:
@@ -59,9 +59,9 @@ def main():
 
 def plot_cart(xt, theta):
     theta += math.pi
-    cart_w = 1.0
-    cart_h = 0.5
-    radius = 0.1
+    cart_w = 0.25
+    cart_h = 0.12
+    radius = 0.03
 
     cx = np.array([-cart_w / 2.0, cart_w / 2.0, cart_w /
                    2.0, -cart_w / 2.0, -cart_w / 2.0])
@@ -103,7 +103,7 @@ def plot_cart(xt, theta):
 
     plt.axis("equal")
 
-    plt.xlim([-5.0, 2.0])
+    #plt.xlim([-5.0, 2.0])
     plt.pause(0.001)
 
 

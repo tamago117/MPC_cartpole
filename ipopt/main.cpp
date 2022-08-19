@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Eigen/Dense"
+#include <eigen3/Eigen/Core>
 #include "include/matplotlibcpp.h"
 #include "include/MPC_cartpole.hpp"
 
@@ -136,7 +136,6 @@ int main()
         matplotlibcpp::pause(0.001);
 
         //finish judge
-        
         if(current(2) > 3.14 || current(2) < -3.14){
             break;
         }

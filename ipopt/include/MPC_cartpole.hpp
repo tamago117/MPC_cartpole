@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include "Eigen/Dense"
+#include <eigen3/Eigen/Core>
 #define HAVE_CSTDDEF
 #include <cppad/ipopt/solve.hpp>
 #undef HAVE_CSTDDEF
@@ -186,7 +186,7 @@ MPC_cartpole::MPC_cartpole()
 
     HORIZONS = 20;
     max_INPUT = 1.0;
-    BOUND_VALUE = 0.01;
+    BOUND_VALUE = 100;
 
     X_START = 0;
     ANGLE_START = X_START + HORIZONS;

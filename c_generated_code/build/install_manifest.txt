@@ -1,0 +1,1 @@
+/home/MPC_cartpole/c_generated_code/libacados_ocp_solver_cart_pole.so

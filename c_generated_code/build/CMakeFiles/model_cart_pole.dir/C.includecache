@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/MPC_cartpole/c_generated_code/cart_pole_model/cart_pole_expl_ode_fun.c
+math.h
+-
+
+/home/MPC_cartpole/c_generated_code/cart_pole_model/cart_pole_expl_vde_forw.c
+math.h
+-
+

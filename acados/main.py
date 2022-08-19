@@ -75,8 +75,8 @@ def main():
     mpc.constraints.x0 = np.array([0.0, 0.0, 0.0, 0.0]) #初期時刻の状態を制約として指定
 
     mpc.constraints.constr_type = 'BGH'
-    mpc.constraints.lbu = np.array([-15.0]) #制御入力の下限
-    mpc.constraints.ubu = np.array([15.0]) #制御入力の上限
+    mpc.constraints.lbu = np.array([-25.0]) #制御入力の下限
+    mpc.constraints.ubu = np.array([25.0]) #制御入力の上限
     mpc.constraints.idxbu = np.array([0]) #制御入力の制約をかけるインデックス
 
     mpc.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM' # Riccati recursion
@@ -154,10 +154,10 @@ def main():
 
 def plot_cart(xt, theta):
     theta += math.pi
-    l_bar = 2.0  # length of bar
-    cart_w = 1.0
-    cart_h = 0.5
-    radius = 0.1
+    l_bar = 1.0  # length of bar
+    cart_w = 0.5
+    cart_h = 0.25
+    radius = 0.05
 
     cx = np.array([-cart_w / 2.0, cart_w / 2.0, cart_w /
                    2.0, -cart_w / 2.0, -cart_w / 2.0])
