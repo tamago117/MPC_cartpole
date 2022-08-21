@@ -21,15 +21,22 @@ def main():
     us = []
     cartpole = CartPole()
     mpc = MPC()
-    mpc.init()
+    #mpc.init()
     x = np.array([0.0, 0.0, 0.0, 0.0])
+    x_ref = np.array([0.0, math.pi, 0.0, 0.0])   # target
 
     for step in range(sim_steps):
         if step%(1/sampling_time) == 0:
             print('t=', step*sampling_time)
-        
+
+        if step*sampling_time>5.0:
+            x_ref = np.array([0.5, math.pi, 0.0, 0.0])
+
+        if step*sampling_time>7.0:
+            x_ref = np.array([-0.5, math.pi, 0.0, 0.0])
+
         current_time = time.time()
-        u = mpc.solve(x)
+        u = mpc.solve(x, x_ref)
         print(str(math.floor(1/(time.time() - current_time))) + "hz")
         xs.append(x)
         us.append(u)

@@ -4,18 +4,23 @@ from casadi import *
 import math
 import numpy as np
 
-from CostFunction import CostFunction
 from CartPole import CartPole
 
 class MPC:
     def __init__(self):
-        T = 2.0 # horizon length
-        N = 40 # discreate grid number
-        dt = T/N # minute time
-        nx = 4 # state variable number
-        nu = 1 # input variable number
-        cartpole = CartPole()
-        cost_function = CostFunction()
+        self.T = 1.0 # horizon length
+        self.N = 30 # discreate grid number
+        self.dt = self.T/self.N # minute time
+        self.nx = 4 # state variable number
+        self.nu = 1 # input variable number
+        self.cartpole = CartPole()
+
+        self.Q  = [2.0, 4.0, 0.01, 0.01]       # state weights
+        self.Qf = [2.0, 4.0, 0.05, 0.05]       # terminal state weights
+        self.R  = [0.01]                       # input weights
+
+        max_input = 25
+        x_max = 1.4
 
         w = [] # contain optimal variable
         w0 = [] # contain initial optimal variable
@@ -28,7 +33,9 @@ class MPC:
         lam_x0 = [] # Lagrangian multiplier
         lam_g0 = [] # Lagrangian multiplier
 
-        Xk = MX.sym('X0', nx) # initial time state vector x0
+        Xk = MX.sym('X0', self.nx) # initial time state vector x0
+        Xref = MX.sym('x_ref', self.nx) # x reference
+
         w += [Xk]
         # equality constraint
         lbw += [0, 0, 0, 0]  # constraints are set by setting lower-bound and upper-bound to the same value
@@ -36,27 +43,27 @@ class MPC:
         w0 +=  [0, 0, 0, 0]      # x0 initial estimate
         lam_x0 += [0, 0, 0, 0]    # Lagrangian multiplier initial estimate
 
-        for k in range(N):
-            Uk = MX.sym('U_' + str(k), nu)
+        for k in range(self.N):
+            Uk = MX.sym('U_' + str(k), self.nu)
             w += [Uk]
-            lbw += [-25.0]
-            ubw += [25.0]
+            lbw += [-max_input]
+            ubw += [max_input]
             w0 += [0]
             lam_x0 += [0]
 
             #stage cost
-            J = J + cost_function.stage_cost(Xk, Uk)
+            J = J + self.stage_cost(Xk, Uk, Xref)
 
             # Discretized equation of state by forward Euler
-            dXk = cartpole.dynamics(Xk, Uk)
-            Xk_next = vertcat(Xk[0] + dXk[0] * dt,
-                              Xk[1] + dXk[1] * dt,
-                              Xk[2] + dXk[2] * dt,
-                              Xk[3] + dXk[3] * dt)
-            Xk1 = MX.sym('X_' + str(k+1), nx)
+            dXk = self.cartpole.dynamics(Xk, Uk)
+            Xk_next = vertcat(Xk[0] + dXk[0] * self.dt,
+                              Xk[1] + dXk[1] * self.dt,
+                              Xk[2] + dXk[2] * self.dt,
+                              Xk[3] + dXk[3] * self.dt)
+            Xk1 = MX.sym('X_' + str(k+1), self.nx)
             w   += [Xk1]
-            lbw += [-1.0, -inf, -inf, -inf]
-            ubw += [1.0, inf, inf, inf]
+            lbw += [-x_max, -inf, -inf, -inf]
+            ubw += [x_max, inf, inf, inf]
             w0 += [0.0, 0.0, 0.0, 0.0]
             lam_x0 += [0, 0, 0, 0]
 
@@ -68,7 +75,7 @@ class MPC:
             Xk = Xk1
 
         # finite cost
-        J = J + cost_function.terminal_cost(Xk)
+        J = J + self.terminal_cost(Xk, Xref)
 
         self.J = J
         self.w = vertcat(*w)
@@ -82,30 +89,48 @@ class MPC:
         self.ubg = ubg
 
         # 非線形計画問題(NLP)
-        self.nlp = {'f': self.J, 'x': self.w, 'g': self.g}
+        self.nlp = {'f': self.J, 'x': self.w, 'p': Xref, 'g': self.g}
         # Ipopt ソルバー，最小バリアパラメータを0.1，最大反復回数を5, ウォームスタートをONに
         self.solver = nlpsol('solver', 'ipopt', self.nlp, {'calc_lam_p':True, 'calc_lam_x':True, 'print_time':False, 'ipopt':{'max_iter':5, 'mu_min':0.1, 'warm_start_init_point':'yes', 'print_level':0, 'print_timing_statistics':'no'}})
         # self.solver = nlpsol('solver', 'scpgen', self.nlp, {'calc_lam_p':True, 'calc_lam_x':True, 'qpsol':'qpoases', 'print_time':False, 'print_header':False, 'max_iter':5, 'hessian_approximation':'gauss-newton', 'qpsol_options':{'print_out':False, 'printLevel':'none'}}) # print をオフにしたいがやり方がわからない
 
-    def init(self, x0=None):
+    def init(self, x0=None, xref=None):
         if x0 is not None:
             # 初期状態についての制約を設定
             self.lbx[0:4] = x0
             self.ubx[0:4] = x0
         # primal variables (x) と dual variables（ラグランジュ乗数）の初期推定解も与えつつ solve（warm start）
-        sol = self.solver(x0=self.x, lbx=self.lbx, ubx=self.ubx, lbg=self.lbg, ubg=self.ubg, lam_x0=self.lam_x, lam_g0=self.lam_g)
+        sol = self.solver(x0=self.x, p=xref, lbx=self.lbx, ubx=self.ubx, lbg=self.lbg, ubg=self.ubg, lam_x0=self.lam_x, lam_g0=self.lam_g)
         # 次の warm start のために解を保存
         self.x = sol['x'].full().flatten()
         self.lam_x = sol['lam_x'].full().flatten()
         self.lam_g = sol['lam_g'].full().flatten()
 
-    def solve(self, x0):
+    def stage_cost(self, x, u, x_ref):
+        cost = 0
+        for i in range(self.nx):
+            cost += 0.5 * self.Q[i] * (x[i] - x_ref[i])**2
+        for i in range(self.nu):
+            cost += 0.5 * self.R[i] * u[i]**2
+        return cost
+
+    def terminal_cost(self, x, x_ref):
+        cost = 0
+        for i in range(self.nx):
+            cost += 0.5 * self.Q[i] * (x[i] - x_ref[i])**2
+        return cost
+
+    """
+    x0 = np.array([x_current, angle_current, v_current, angleV_current])
+    xref = np.array([x_ref, theta_ref, v_ref, angleV_ref])
+    """
+    def solve(self, x0, xref):
         # 初期状態についての制約を設定
         nx = x0.shape[0]
         self.lbx[0:nx] = x0
         self.ubx[0:nx] = x0
         # primal variables (x) と dual variables（ラグランジュ乗数）の初期推定解も与えつつ solve（warm start）
-        sol = self.solver(x0=self.x, lbx=self.lbx, ubx=self.ubx, lbg=self.lbg, ubg=self.ubg, lam_x0=self.lam_x, lam_g0=self.lam_g)
+        sol = self.solver(x0=self.x, p=xref, lbx=self.lbx, ubx=self.ubx, lbg=self.lbg, ubg=self.ubg, lam_x0=self.lam_x, lam_g0=self.lam_g)
         # 次の warm start のために解を保存
         self.x = sol['x'].full().flatten()
         self.lam_x = sol['lam_x'].full().flatten()
