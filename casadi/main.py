@@ -22,7 +22,7 @@ def main():
     cartpole = CartPole()
     mpc = MPC()
     #mpc.init()
-    x = np.array([-0.5, math.pi, 0.0, 0.0])
+    x = np.array([0, 0, 0.0, 0.0])
     x_ref = np.array([0.0, math.pi, 0.0, 0.0])   # target
 
     for step in range(sim_steps):
