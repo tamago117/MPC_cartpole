@@ -39,8 +39,8 @@ class MPC:
         for k in range(N):
             Uk = MX.sym('U_' + str(k), nu)
             w += [Uk]
-            lbw += [-250.0]
-            ubw += [250.0]
+            lbw += [-25.0]
+            ubw += [25.0]
             w0 += [0]
             lam_x0 += [0]
 
@@ -55,8 +55,8 @@ class MPC:
                               Xk[3] + dXk[3] * dt)
             Xk1 = MX.sym('X_' + str(k+1), nx)
             w   += [Xk1]
-            lbw += [-5, math.pi-1.0, -inf, -inf]
-            ubw += [5, math.pi+1.0, inf, inf]
+            lbw += [-1.0, math.pi-1.0, -inf, -inf]
+            ubw += [1.0, math.pi+1.0, inf, inf]
             w0 += [0.0, 0.0, 0.0, 0.0]
             lam_x0 += [0, 0, 0, 0]
 
