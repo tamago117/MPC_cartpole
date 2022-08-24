@@ -90,8 +90,8 @@ int main()
     Eigen::VectorXd target(4);
     Eigen::VectorXd current(4);
     Eigen::VectorXd input(1);
-    target << 0.0, M_PI, 0.0, 0.0;
-    current << 0.0, M_PI-0.1, 0.0, 0.0;
+    target << 1.0, M_PI, 0.0, 0.0;
+    current << 0.0, M_PI+0.4, 0.0, 0.0;
 
     MCMPC_CartPole mcmpc_cartpole;
 

@@ -82,10 +82,10 @@ MCMPC_CartPole::MCMPC_CartPole()
 {
     input_weight = 0.01;
     input_diff_weight = 0.01;
-    pos_weight = 2.5;
-    angle_weight = 3.5;
-    v_weight = 0.1;
-    angleVelocity_weight = 0.1;
+    pos_weight = 7.5;
+    angle_weight = 2.5;
+    v_weight = 0.05;
+    angleVelocity_weight = 0.05;
 
     R = Eigen::MatrixXd(1, NU);
     R << input_weight;
@@ -95,10 +95,10 @@ MCMPC_CartPole::MCMPC_CartPole()
     Q << pos_weight, angle_weight, v_weight, angleVelocity_weight;
 
     //default values
-    HORIZONS = 10;
-    ITERATIONS = 1;
+    HORIZONS = 20;
+    ITERATIONS = 5;
     ITERATION_TH = 0.08;
-    INPUT_THREAD = 2000;
+    INPUT_THREAD = 1000;
     TOP_INPUTS = 50;
     max_INPUT = 35;
     DT = 0.02;
@@ -108,7 +108,7 @@ MCMPC_CartPole::MCMPC_CartPole()
     POLE_LENGTH = 0.5;
 
     INPUT_DEV = Eigen::VectorXd(NU);
-    INPUT_DEV << max_INPUT*2;
+    INPUT_DEV << max_INPUT;
 
     input_list.resize(HORIZONS);
 }
@@ -166,6 +166,16 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
         //last : input -> state
         x[HORIZONS] = cartpole.dynamics(x[HORIZONS-1], u[thread].back());
 
+        //constrain
+        for(int horizon = 0; horizon < HORIZONS; ++horizon){
+            //input
+            if(u[thread][horizon](0)>max_INPUT){
+                u[thread][horizon](0) = max_INPUT;
+            }else if(u[thread][horizon](0) < -max_INPUT){
+                u[thread][horizon](0) = -max_INPUT;
+            }
+        }
+
         //evaluation
         for(int horizon = 0; horizon < HORIZONS+1; ++horizon){
             //state diff
@@ -176,18 +186,6 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
         }
         for(int horizon = 0; horizon < HORIZONS-1; ++horizon){
             cost[thread] += (Rd * (u[thread][horizon+1] - u[thread][horizon]).cwiseAbs()).sum();
-        }
-
-        //constrain
-        for(int horizon = 0; horizon < HORIZONS; ++horizon){
-            //input
-            if(u[thread][horizon](0)>max_INPUT){
-                cost[thread] += COST_OVER_VALUE*abs(u[thread][horizon](0));
-                u[thread][horizon](0) = max_INPUT;
-            }else if(u[thread][horizon](0) < -max_INPUT){
-                cost[thread] += COST_OVER_VALUE*abs(u[thread][horizon](0));
-                u[thread][horizon](0) = -max_INPUT;
-            }
         }
 
     }
@@ -220,7 +218,7 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
 
     }
 
-    //std::cout<<"cost : "<<cost.front() << std::endl;
+    std::cout<<"min cost : "<<cost.front() << std::endl;
 
     u_result(0) = input_list.front();
 
