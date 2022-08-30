@@ -2,6 +2,7 @@
 #include <eigen3/Eigen/Dense>
 #include "include/matplotlibcpp.h"
 #include "include/MCMPC_CartPole.hpp"
+#include "include/rate_analysis.hpp"
 
 const double SIM_TIME = 500.0;
 
@@ -90,7 +91,7 @@ int main()
     Eigen::VectorXd target(4);
     Eigen::VectorXd current(4);
     Eigen::VectorXd input(1);
-    target << 1.0, M_PI, 0.0, 0.0;
+    target << 0.0, M_PI, 0.0, 0.0;
     current << 0.0, M_PI+0.4, 0.0, 0.0;
 
     MCMPC_CartPole mcmpc_cartpole;
@@ -99,9 +100,13 @@ int main()
     {
         time += DT;
 
+        rate_analysis r;
+        r.start_record();
+
         //mpc solve
         input = mcmpc_cartpole.solve(target, current);
         std::cout<<"input : "<<input<<std::endl;
+        std::cout<<"frequency : "<<r.get_rate()<<"hz"<<std::endl;
 
         //store data history
         static CartPole cartpole(CART_M, POLE_M, POLE_L, DT);

@@ -48,6 +48,7 @@ class MCMPC_CartPole
         std::vector<double> input_list;
 
         //functions
+        double input_constrain(const double _input, const double lower_bound, const double upper_bound);
         Eigen::VectorXd mcmpc_control(const Eigen::VectorXd& _target_state, const Eigen::VectorXd& _current_state);
 
         inline double gauss_dis(double mu = 0.0, double sig = 1.0)
@@ -82,7 +83,7 @@ MCMPC_CartPole::MCMPC_CartPole()
 {
     input_weight = 0.01;
     input_diff_weight = 0.01;
-    pos_weight = 7.5;
+    pos_weight = 2.5;
     angle_weight = 2.5;
     v_weight = 0.05;
     angleVelocity_weight = 0.05;
@@ -95,12 +96,12 @@ MCMPC_CartPole::MCMPC_CartPole()
     Q << pos_weight, angle_weight, v_weight, angleVelocity_weight;
 
     //default values
-    HORIZONS = 20;
-    ITERATIONS = 5;
+    HORIZONS = 30;
+    ITERATIONS = 2;
     ITERATION_TH = 0.08;
     INPUT_THREAD = 1000;
     TOP_INPUTS = 50;
-    max_INPUT = 35;
+    max_INPUT = 25;
     DT = 0.02;
 
     CART_MASS = 2.0;
@@ -108,7 +109,7 @@ MCMPC_CartPole::MCMPC_CartPole()
     POLE_LENGTH = 0.5;
 
     INPUT_DEV = Eigen::VectorXd(NU);
-    INPUT_DEV << max_INPUT;
+    INPUT_DEV << max_INPUT/2;
 
     input_list.resize(HORIZONS);
 }
@@ -135,6 +136,18 @@ Eigen::VectorXd MCMPC_CartPole::solve(const Eigen::VectorXd& target_state, const
     return input;
 }
 
+double MCMPC_CartPole::input_constrain(const double _input, const double lower_bound, const double upper_bound)
+{
+    if(_input < lower_bound){
+        return lower_bound;
+    }
+    else if(_input > upper_bound){
+        return upper_bound;
+    }
+
+    return _input;
+}
+
 Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_state, const Eigen::VectorXd& _current_state)
 {
     Eigen::VectorXd u_result = Eigen::VectorXd(NU);
@@ -157,6 +170,9 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
         for(int horizon = 0; horizon < HORIZONS; ++horizon){
             u[thread][horizon](0) = input_list[horizon] + gauss_dis() * INPUT_DEV(0);
 
+            //input constrain
+            u[thread][horizon](0) = input_constrain(u[thread][horizon](0), -max_INPUT, max_INPUT);
+
             //input -> state
             x[horizon+1] = cartpole.dynamics(x[horizon], u[thread][horizon]);
         }
@@ -165,16 +181,6 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
         u[thread].back() = u[thread][HORIZONS-1];
         //last : input -> state
         x[HORIZONS] = cartpole.dynamics(x[HORIZONS-1], u[thread].back());
-
-        //constrain
-        for(int horizon = 0; horizon < HORIZONS; ++horizon){
-            //input
-            if(u[thread][horizon](0)>max_INPUT){
-                u[thread][horizon](0) = max_INPUT;
-            }else if(u[thread][horizon](0) < -max_INPUT){
-                u[thread][horizon](0) = -max_INPUT;
-            }
-        }
 
         //evaluation
         for(int horizon = 0; horizon < HORIZONS+1; ++horizon){
