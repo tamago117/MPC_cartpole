@@ -7,9 +7,9 @@ import numpy as np
 from CartPole import CartPole
 
 class MPC:
-    def __init__(self):
-        self.T = 1.0 # horizon length
-        self.N = 30 # discreate grid number
+    def __init__(self, T, N, max_input, x_max):
+        self.T = T # horizon length
+        self.N = N # discreate grid number
         self.dt = self.T/self.N # minute time
         self.nx = 4 # state variable number
         self.nu = 1 # input variable number
@@ -19,8 +19,8 @@ class MPC:
         self.Qf = [2.0, 4.0, 0.05, 0.05]       # terminal state weights
         self.R  = [0.01]                       # input weights
 
-        max_input = 25
-        x_max = 1.4
+        self.max_input = max_input
+        self.x_max = x_max
 
         w = [] # contain optimal variable
         w0 = [] # contain initial optimal variable
@@ -46,8 +46,8 @@ class MPC:
         for k in range(self.N):
             Uk = MX.sym('U_' + str(k), self.nu)
             w += [Uk]
-            lbw += [-max_input]
-            ubw += [max_input]
+            lbw += [-self.max_input]
+            ubw += [self.max_input]
             w0 += [0]
             lam_x0 += [0]
 
@@ -62,8 +62,8 @@ class MPC:
                               Xk[3] + dXk[3] * self.dt)
             Xk1 = MX.sym('X_' + str(k+1), self.nx)
             w   += [Xk1]
-            lbw += [-x_max, -inf, -inf, -inf]
-            ubw += [x_max, inf, inf, inf]
+            lbw += [-self.x_max, -inf, -inf, -inf]
+            ubw += [self.x_max, inf, inf, inf]
             w0 += [0.0, 0.0, 0.0, 0.0]
             lam_x0 += [0, 0, 0, 0]
 
@@ -99,6 +99,8 @@ class MPC:
             # 初期状態についての制約を設定
             self.lbx[0:4] = x0
             self.ubx[0:4] = x0
+        if xref is None:
+            xref = np.zeros(self.nx)
         # primal variables (x) と dual variables（ラグランジュ乗数）の初期推定解も与えつつ solve（warm start）
         sol = self.solver(x0=self.x, p=xref, lbx=self.lbx, ubx=self.ubx, lbg=self.lbg, ubg=self.ubg, lam_x0=self.lam_x, lam_g0=self.lam_g)
         # 次の warm start のために解を保存

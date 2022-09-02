@@ -14,13 +14,18 @@ sim_time = 10.0
 sampling_time = 0.01 # 100hz
 sim_steps = math.floor(sim_time / sampling_time)
 
+T = 100 # horizon length
+
+max_input = 25
+x_max = 1.5
+
 l_bar = 0.5  # length of bar
 
 def main():
     xs = []
     us = []
     cartpole = CartPole()
-    mpc = MPC()
+    mpc = MPC(sampling_time*T, T, max_input, x_max)
     #mpc.init()
     x = np.array([0, 0, 0.0, 0.0])
     x_ref = np.array([0.0, math.pi, 0.0, 0.0])   # target
