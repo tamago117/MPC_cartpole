@@ -2,14 +2,10 @@ import pybullet as p
 import pybullet_data
 import time
 import os
-import sys
-
-# add path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 p.connect(p.GUI)
 #p.setAdditionalSearchPath(pybullet_data.getDataPath())
-humanoid = p.loadURDF("cartpole.urdf")
+humanoid = p.loadURDF(os.path.dirname(os.path.abspath(__file__))+"/cartpole.urdf")
 
 gravId = p.addUserDebugParameter("gravity", -10, 10, -10)
 jointIds = []

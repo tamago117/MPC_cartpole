@@ -3,6 +3,7 @@ import pybullet_data
 import math
 import time
 import numpy as np
+import os
 from casadi import *
 
 from MPC import MPC
@@ -29,7 +30,7 @@ def main():
     #p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
     # load model
-    cartpole = p.loadURDF("cartpole.urdf", [0, 0, 0])
+    cartpole = p.loadURDF(os.path.dirname(os.path.abspath(__file__))+"/cartpole.urdf", [0, 0, 0])
 
     textColor = [1, 1, 1]
     shift = 0.05
