@@ -11,13 +11,13 @@ from CostFunction import CostFunction
 from CartPole import CartPole
 
 sim_time = 10.0
-sampling_time = 0.01 # 100hz
+sampling_time = 0.02 # 100hz
 sim_steps = math.floor(sim_time / sampling_time)
 
-T = 100 # horizon length
+T = 50 # horizon length
 
 max_input = 25
-x_max = 1.5
+x_max = 0.2
 
 l_bar = 0.5  # length of bar
 
@@ -31,14 +31,14 @@ def main():
     x_ref = np.array([0.0, math.pi, 0.0, 0.0])   # target
 
     for step in range(sim_steps):
-        if step%(1/sampling_time) == 0:
-            print('t=', step*sampling_time)
+        #if step%(1/sampling_time) == 0:
+        print('t=', step*sampling_time)
 
-        if step*sampling_time>5.0:
-            x_ref = np.array([0.5, math.pi, 0.0, 0.0])
+        #if step*sampling_time>5.0:
+            #x_ref = np.array([0.5, math.pi, 0.0, 0.0])
 
-        if step*sampling_time>7.0:
-            x_ref = np.array([-0.5, math.pi, 0.0, 0.0])
+        #if step*sampling_time>7.0:
+            #x_ref = np.array([-0.5, math.pi, 0.0, 0.0])
 
         current_time = time.time()
         u = mpc.solve(x, x_ref)

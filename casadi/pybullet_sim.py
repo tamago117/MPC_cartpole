@@ -13,8 +13,8 @@ from CartPole import CartPole
 sampling_time = 0.01 # 100hz
 T = 100 # horizon
 
-max_input = 25
-x_max = 1.5
+max_input = 35
+x_max = 2.0
 
 def main():
     x = np.array([0.0, math.pi, 0.0, 0.0]) # initial state

@@ -1,0 +1,1 @@
+/usr/bin/c++  -g  -rdynamic CMakeFiles/output.dir/main.cpp.o  -o output  -lpython3.8 

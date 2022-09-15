@@ -1,12 +1,16 @@
 #include <iostream>
 #include <eigen3/Eigen/Dense>
 #include "include/matplotlibcpp.h"
-#include "include/MCMPC_CartPole.hpp"
+#include "include/MCMPC_CartPole.cuh"
 #include "include/rate_analysis.hpp"
+#include "include/MCMPC_config.cuh"
 
 const double SIM_TIME = 500.0;
 
+/*const double HORIZONS = 30;
+const double max_INPUT = 100;
 const double DT = 0.02;
+*/
 
 //cart pole parameter
 const double CART_M = 2.0;
@@ -15,6 +19,16 @@ const double POLE_L = 0.5;
 const double CART_W = 0.25;
 const double CART_H = 0.12;
 const double WHEEL_RADIUS = 0.02;
+
+/*
+//state weight
+const double W_X  = 5.0;
+const double W_ANGLE = 1.0;
+const double W_V = 1.0;
+//input weight
+const double W_INPUT = 0.01;
+const double W_INPUT_D = 0.1;
+*/
 
 const double FINISH_ETHETA = 0.1;
 
@@ -78,11 +92,11 @@ int main()
     double v, w;
 
     //target and current state
-    Eigen::VectorXd target(4);
-    Eigen::VectorXd current(4);
-    Eigen::VectorXd input(1);
+    Eigen::VectorXf target(4);
+    Eigen::VectorXf current(4);
+    Eigen::VectorXf input(1);
     target << 0.0, M_PI, 0.0, 0.0;
-    current << 0.0, 0.0, 0.0, 0.0;
+    current << 0.0, 0, 0.0, 0.0;
 
     MCMPC_CartPole mcmpc_cartpole;
 
@@ -99,8 +113,8 @@ int main()
         std::cout<<"frequency : "<<r.get_rate()<<"hz"<<std::endl;
 
         //store data history
-        static CartPole cartpole(CART_M, POLE_M, POLE_L, DT);
-        current = cartpole.dynamics(current, input);
+        //static CartPole cartpole(CART_M, POLE_M, POLE_L, DT);
+        current = CartPole::dynamics(current, input, DT);
 
         matplotlibcpp::clf();
         plot_cart(current(0), current(1));

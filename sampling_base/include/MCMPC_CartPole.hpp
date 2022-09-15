@@ -8,6 +8,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include "CartPole.hpp"
+#include "rate_analysis.hpp"
 
 class MCMPC_CartPole
 {
@@ -34,8 +35,9 @@ class MCMPC_CartPole
         int INPUT_THREAD; //mcmpc : input threads(500~(5000))
         int TOP_INPUTS; //mcmpc : cost lower inputs
         double max_INPUT;
+        double X_MAX;
         double DT;
-        const double COST_OVER_VALUE = 1000;
+        const double COST_OVER_VALUE = 10000;
 
         //model parameters
         double CART_MASS;
@@ -49,6 +51,7 @@ class MCMPC_CartPole
 
         //functions
         double input_constrain(const double _input, const double lower_bound, const double upper_bound);
+        double state_softConstrain(const double _state, const double lower_bound, const double upper_bound);
         Eigen::VectorXd mcmpc_control(const Eigen::VectorXd& _target_state, const Eigen::VectorXd& _current_state);
 
         inline double gauss_dis(double mu = 0.0, double sig = 1.0)
@@ -83,8 +86,8 @@ MCMPC_CartPole::MCMPC_CartPole()
 {
     input_weight = 0.01;
     input_diff_weight = 0.01;
-    pos_weight = 2.5;
-    angle_weight = 2.5;
+    pos_weight = 2.0;
+    angle_weight = 2.0;
     v_weight = 0.05;
     angleVelocity_weight = 0.05;
 
@@ -96,12 +99,13 @@ MCMPC_CartPole::MCMPC_CartPole()
     Q << pos_weight, angle_weight, v_weight, angleVelocity_weight;
 
     //default values
-    HORIZONS = 30;
-    ITERATIONS = 2;
+    HORIZONS = 50;
+    ITERATIONS = 1;
     ITERATION_TH = 0.08;
-    INPUT_THREAD = 1000;
+    INPUT_THREAD = 800;
     TOP_INPUTS = 50;
-    max_INPUT = 25;
+    max_INPUT = 45;
+    X_MAX = 0.3;
     DT = 0.02;
 
     CART_MASS = 2.0;
@@ -148,6 +152,18 @@ double MCMPC_CartPole::input_constrain(const double _input, const double lower_b
     return _input;
 }
 
+double MCMPC_CartPole::state_softConstrain(const double _state, const double lower_bound, const double upper_bound)
+{
+    if(_state < lower_bound){
+        return COST_OVER_VALUE;
+    }
+    else if(_state > upper_bound){
+        return COST_OVER_VALUE;
+    }
+
+    return 0;
+}
+
 Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_state, const Eigen::VectorXd& _current_state)
 {
     Eigen::VectorXd u_result = Eigen::VectorXd(NU);
@@ -166,9 +182,11 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
     static CartPole cartpole(CART_MASS, POLE_MASS, POLE_LENGTH, DT);
 
     //prepare random input threads
+    rate_analysis r;
+    r.start_record();
     for(int thread = 0; thread < INPUT_THREAD; ++thread){
-        for(int horizon = 0; horizon < HORIZONS; ++horizon){
-            u[thread][horizon](0) = input_list[horizon] + gauss_dis() * INPUT_DEV(0);
+        for(int horizon = 0; horizon < HORIZONS-1; ++horizon){
+            u[thread][horizon](0) = input_list[horizon+1] + gauss_dis() * INPUT_DEV(0);
 
             //input constrain
             u[thread][horizon](0) = input_constrain(u[thread][horizon](0), -max_INPUT, max_INPUT);
@@ -178,9 +196,9 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
         }
 
         //last input
-        u[thread].back() = u[thread][HORIZONS-1];
+        u[thread][HORIZONS-1] = u[thread][HORIZONS-2];
         //last : input -> state
-        x[HORIZONS] = cartpole.dynamics(x[HORIZONS-1], u[thread].back());
+        x[HORIZONS] = cartpole.dynamics(x[HORIZONS-1], u[thread][HORIZONS-1]);
 
         //evaluation
         for(int horizon = 0; horizon < HORIZONS+1; ++horizon){
@@ -194,8 +212,14 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
             cost[thread] += (Rd * (u[thread][horizon+1] - u[thread][horizon]).cwiseAbs()).sum();
         }
 
-    }
+        //state constrain
+        for(int horizon = 0; horizon < HORIZONS-1; ++horizon){
+            cost[thread] += state_softConstrain(x[horizon](0), -X_MAX, X_MAX);
+        }
 
+    }
+    std::cout<<"sampling : "<<1000/r.get_rate()<<"[ms] ";
+    r.start_record();
     sort2vectors(cost, u);
 
     double lam = 0;
@@ -204,14 +228,13 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
     for(int i=0; i<TOP_INPUTS; i++){
         //lam += cost[INPUT_THREAD-1 - i];
         lam += cost[i];
-        //std::cout<<u[i][0](0)<<" ";
     }
-    //std::cout<<std::endl;
 
     for(int i=0; i<TOP_INPUTS; i++){
         //denom += std::exp(-cost[INPUT_THREAD-1 - i]/lam);
         denom += std::exp(-cost[i]/lam);
     }
+    
     for(int horizon=0; horizon<HORIZONS; ++horizon){
         Eigen::VectorXd molecule(NU);
         for(int i=0; i<TOP_INPUTS; i++){
@@ -223,6 +246,7 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
         input_list[horizon] = result(0);
 
     }
+    std::cout<<"other process : "<<1000/r.get_rate()<<"[ms] \n";
 
     std::cout<<"min cost : "<<cost.front() << std::endl;
 

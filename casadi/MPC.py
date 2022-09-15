@@ -15,8 +15,8 @@ class MPC:
         self.nu = 1 # input variable number
         self.cartpole = CartPole()
 
-        self.Q  = [2.0, 4.0, 0.01, 0.01]       # state weights
-        self.Qf = [2.0, 4.0, 0.05, 0.05]       # terminal state weights
+        self.Q  = [2.0, 2.0, 0.05, 0.05]       # state weights
+        self.Qf = [2.0, 2.0, 0.05, 0.05]       # terminal state weights
         self.R  = [0.01]                       # input weights
 
         self.max_input = max_input

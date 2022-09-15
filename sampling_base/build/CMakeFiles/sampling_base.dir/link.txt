@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/sampling_base.dir/main.cpp.o  -o sampling_base  -lpython3.8 
