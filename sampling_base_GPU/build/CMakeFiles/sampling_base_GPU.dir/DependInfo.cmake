@@ -13,7 +13,6 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
   "/usr/include/python3.8"
   "/usr/local/cuda/include"
-  "/usr/include/eigen3"
   )
 
 # Targets to which this target links.

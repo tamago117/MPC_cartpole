@@ -96,7 +96,7 @@ int main()
         //mpc solve
         input = mcmpc_cartpole.solve(target, current);
         std::cout<<"input : "<<input<<std::endl;
-        std::cout<<"frequency : "<<r.get_rate()<<"hz"<<std::endl;
+        std::cout<<1000/r.get_rate()<<"ms"<<std::endl;
 
         //store data history
         static CartPole cartpole(CART_M, POLE_M, POLE_L, DT);

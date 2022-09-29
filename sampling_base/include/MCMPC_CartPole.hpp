@@ -86,10 +86,10 @@ MCMPC_CartPole::MCMPC_CartPole()
 {
     input_weight = 0.01;
     input_diff_weight = 0.01;
-    pos_weight = 2.0;
-    angle_weight = 2.0;
-    v_weight = 0.05;
-    angleVelocity_weight = 0.05;
+    pos_weight = 1.0;
+    angle_weight = 4.0;
+    v_weight = 0.1;
+    angleVelocity_weight = 0.1;
 
     R = Eigen::MatrixXd(1, NU);
     R << input_weight;
@@ -99,13 +99,13 @@ MCMPC_CartPole::MCMPC_CartPole()
     Q << pos_weight, angle_weight, v_weight, angleVelocity_weight;
 
     //default values
-    HORIZONS = 50;
+    HORIZONS = 40;
     ITERATIONS = 1;
-    ITERATION_TH = 0.08;
-    INPUT_THREAD = 800;
-    TOP_INPUTS = 50;
-    max_INPUT = 45;
-    X_MAX = 0.3;
+    ITERATION_TH = 0.1;
+    INPUT_THREAD = 1000;
+    TOP_INPUTS = INPUT_THREAD/20;
+    max_INPUT = 25;
+    X_MAX = 0.5;
     DT = 0.02;
 
     CART_MASS = 2.0;
@@ -113,7 +113,7 @@ MCMPC_CartPole::MCMPC_CartPole()
     POLE_LENGTH = 0.5;
 
     INPUT_DEV = Eigen::VectorXd(NU);
-    INPUT_DEV << max_INPUT/2;
+    INPUT_DEV << max_INPUT;
 
     input_list.resize(HORIZONS);
 }
@@ -226,19 +226,16 @@ Eigen::VectorXd MCMPC_CartPole::mcmpc_control(const Eigen::VectorXd& _target_sta
     double denom = 0;
 
     for(int i=0; i<TOP_INPUTS; i++){
-        //lam += cost[INPUT_THREAD-1 - i];
         lam += cost[i];
     }
 
     for(int i=0; i<TOP_INPUTS; i++){
-        //denom += std::exp(-cost[INPUT_THREAD-1 - i]/lam);
         denom += std::exp(-cost[i]/lam);
     }
     
     for(int horizon=0; horizon<HORIZONS; ++horizon){
         Eigen::VectorXd molecule(NU);
         for(int i=0; i<TOP_INPUTS; i++){
-            //molecule += std::exp(-cost[INPUT_THREAD-1 - i]/lam) * u[INPUT_THREAD-1 - i][horizon];
             molecule += std::exp(-cost[i]/lam) * u[i][horizon];
         }
         Eigen::VectorXd result = molecule/denom;

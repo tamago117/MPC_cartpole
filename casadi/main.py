@@ -14,10 +14,10 @@ sim_time = 10.0
 sampling_time = 0.02 # 100hz
 sim_steps = math.floor(sim_time / sampling_time)
 
-T = 50 # horizon length
+T = 40 # horizon length
 
 max_input = 25
-x_max = 0.2
+x_max = 0.3
 
 l_bar = 0.5  # length of bar
 

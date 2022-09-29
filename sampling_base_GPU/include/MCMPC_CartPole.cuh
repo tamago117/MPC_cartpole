@@ -5,7 +5,6 @@
 #include <string>
 #include <random>
 #include <algorithm>
-#include <eigen3/Eigen/Dense>
 
 // cuda
 #include <cuda.h>
@@ -18,7 +17,7 @@
 #include <thrust/reduce.h>
 #include "cuda_utils.cuh"
 
-#include "CartPole.cuh"
+//#include "CartPole.cuh"
 #include "MCMPC_config.cuh"
 
 class MCMPC_CartPole
@@ -26,33 +25,32 @@ class MCMPC_CartPole
 public:
     MCMPC_CartPole();
     ~MCMPC_CartPole();
-    Eigen::VectorXf solve(const Eigen::VectorXf &target_state, const Eigen::VectorXf &current_state);
+    vectorF<NU> solve(const vectorF<NX> &target_state, const vectorF<NX> &current_state);
 
 private:
     // mpc
     //static const int NX = 4; // state = x angle v angleVel
     //static const int NU = 1; // input = v
 
-    Eigen::MatrixXf R;  // input weights
-    Eigen::MatrixXf Rd; // input difference weights
-    Eigen::MatrixXf Q;  // state weights
-    Eigen::MatrixXf Qf; // final state weights
+    vectorF<NU> R;  // input weights
+    vectorF<NU> Rd; // input difference weights
+    vectorF<NX> Q;  // state weights
+    vectorF<NX> Qf; // final state weights
     // tranfer value
     float input_weight, input_diff_weight, pos_weight, angle_weight, v_weight, angleVelocity_weight;
 
     // parallel computing variable
-    thrust::device_vector<Eigen::MatrixXf> u_array_device;
-    thrust::host_vector<Eigen::MatrixXf> u_array_host;
-    thrust::device_vector<Eigen::VectorXf> input_list_device;
-    thrust::host_vector<Eigen::VectorXf> input_list_host;
+    thrust::device_vector<u_array> u_array_device;
+    thrust::host_vector<u_array> u_array_host;
+    thrust::device_vector<vectorF<NU>> input_list_device;
+    thrust::host_vector<vectorF<NU>> input_list_host;
     thrust::device_vector<float> cost_array_device;
     thrust::host_vector<float> cost_array_host;
-    thrust::device_vector<Eigen::VectorXf> x_array;
+    thrust::device_vector<x_array> x_array_device;
 
     curandState *random_seed;
 
     // GPU config
-    unsigned int THREAD_PER_BLOCK;
     unsigned int NUM_BLOCKS;
 
     const float COST_OVER_VALUE = 10000;
@@ -66,8 +64,8 @@ private:
 
 // cuda device constant
 __constant__ int d_NX, d_NU;
-__constant__ int d_HORIZONS, d_INPUT_THREADS_NUM, d_TOP_INPUTS_NUM, d_DT;
-__constant__ float d_ITERATION_TH, d_max_INPUT, d_X_MAX, d_COST_OVER_VALUE;
+__constant__ int d_HORIZONS, d_INPUT_THREADS_NUM, d_TOP_INPUTS_NUM;
+__constant__ float d_DT, d_ITERATION_TH, d_max_INPUT, d_X_MAX, d_COST_OVER_VALUE;
 __constant__ MCMPC_config d_config;
 
 /*
@@ -82,8 +80,10 @@ __constant__ float d_UPPER_STATE[NX] = {X_MAX, INFINITY, INFINITY, INFINITY};
 
 unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block);
 // cuda functions
-__global__ void ParallelMonteCarloSimulation(Eigen::MatrixXf *u_array, float *cost_array, const Eigen::VectorXf &_target_state, const Eigen::VectorXf &_current_state, Eigen::VectorXf *x_array, Eigen::VectorXf *mean, curandState *random_seed);
+__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt);
+__global__ void SetRandomSeed(curandState *random_seed_vec, int seed);
+__global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array, const vectorF<NX> xref, const vectorF<NX> current_state, x_array *x_array, vectorF<NU> *mean, curandState *random_seed);
 
 __device__ float input_constrain(const float _input, const float lower_bound, const float upper_bound);
 __device__ float state_constrain(const float _state, const float lower_bound, const float upper_bound);
-__device__ inline float GenerateRadomInput(curandState *random_seed, unsigned int id, float mean, float variance);
+__device__ float GenerateRadomInput(curandState *random_seed, unsigned int id, float mean, float variance);

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <eigen3/Eigen/Dense>
 #include "include/matplotlibcpp.h"
 #include "include/MCMPC_CartPole.cuh"
 #include "include/rate_analysis.hpp"
@@ -92,11 +91,17 @@ int main()
     double v, w;
 
     //target and current state
-    Eigen::VectorXf target(4);
-    Eigen::VectorXf current(4);
-    Eigen::VectorXf input(1);
-    target << 0.0, M_PI, 0.0, 0.0;
-    current << 0.0, 0, 0.0, 0.0;
+    vectorF<NX> target;
+    vectorF<NX> current;
+    vectorF<NU> input;
+    target.vector[0] = 0.0;
+    target.vector[1] = M_PI;
+    target.vector[2] = 0.0;
+    target.vector[3] = 0.0;
+    current.vector[0] = 0.0;
+    current.vector[1] = 0.0;
+    current.vector[2] = 0.0;
+    current.vector[3] = 0.0;
 
     MCMPC_CartPole mcmpc_cartpole;
 
@@ -109,16 +114,16 @@ int main()
 
         //mpc solve
         input = mcmpc_cartpole.solve(target, current);
-        std::cout<<"input : "<<input<<std::endl;
-        std::cout<<"frequency : "<<r.get_rate()<<"hz"<<std::endl;
+        std::cout<<"input : "<<input.vector[0]<<std::endl;
+        std::cout<<"frequency : "<<1000/r.get_rate()<<"ms"<<std::endl;
 
         //store data history
         //static CartPole cartpole(CART_M, POLE_M, POLE_L, DT);
-        current = CartPole::dynamics(current, input, DT);
+        current = dynamics(current, input, DT);
 
         matplotlibcpp::clf();
-        plot_cart(current(0), current(1));
-        matplotlibcpp::title("MPC cartpole\n time[s]:" + std::to_string(time) + " theta[degree]:" + std::to_string(current(1)*180/3.14) + " velocity[m/s]" + std::to_string(current(2)));
+        plot_cart(current.vector[0], current.vector[1]);
+        matplotlibcpp::title("MPC cartpole\n time[s]:" + std::to_string(time) + " theta[degree]:" + std::to_string(current.vector[1]*180/3.14) + " velocity[m/s]" + std::to_string(current.vector[2]));
         matplotlibcpp::axis("equal");
         matplotlibcpp::grid(true);
         matplotlibcpp::pause(0.001);

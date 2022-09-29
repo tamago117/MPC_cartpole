@@ -6,5 +6,5 @@ CXX_FLAGS = -O3 -DNDEBUG   -std=c++14
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/MPC_cartpole/sampling_base_GPU/include -I/usr/include/python3.8 -I/usr/local/cuda/include -isystem /usr/include/eigen3 
+CXX_INCLUDES = -I/home/MPC_cartpole/sampling_base_GPU/include -I/usr/include/python3.8 -I/usr/local/cuda/include 
 
