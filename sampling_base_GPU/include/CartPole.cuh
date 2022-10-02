@@ -1,10 +1,10 @@
 #pragma once
 
 #include <math.h>
-#include <vector>
-#include <eigen3/Eigen/Dense>
+#include "MCMPC_config.cuh"
 
 namespace CartPole
 {
-    __device__ __host__ Eigen::VectorXf dynamics(Eigen::VectorXf x_vec, Eigen::VectorXf u_vec, float dt);
+    __host__ __device__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt);
+
 }

@@ -17,8 +17,8 @@
 #include <thrust/reduce.h>
 #include "cuda_utils.cuh"
 
-//#include "CartPole.cuh"
 #include "MCMPC_config.cuh"
+#include "CartPole.cuh"
 
 class MCMPC_CartPole
 {
@@ -62,25 +62,9 @@ private:
 
 };
 
-// cuda device constant
-__constant__ int d_NX, d_NU;
-__constant__ int d_HORIZONS, d_INPUT_THREADS_NUM, d_TOP_INPUTS_NUM;
-__constant__ float d_DT, d_ITERATION_TH, d_max_INPUT, d_X_MAX, d_COST_OVER_VALUE;
-__constant__ MCMPC_config d_config;
-
-/*
-__constant__ Eigen::VectorXf d_R, d_Rd;
-__constant__ Eigen::VectorXf d_Q, d_Qf;
-__constant__ float d_LOWER_INPUT[NU] = {-max_INPUT};
-__constant__ float d_UPPER_INPUT[NU] = {max_INPUT};
-__constant__ float d_LOWER_STATE[NX] = {-X_MAX, -INFINITY, -INFINITY, -INFINITY};
-__constant__ float d_UPPER_STATE[NX] = {X_MAX, INFINITY, INFINITY, INFINITY};
-*/
-
-
 unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block);
 // cuda functions
-__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt);
+//__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt);
 __global__ void SetRandomSeed(curandState *random_seed_vec, int seed);
 __global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array, const vectorF<NX> xref, const vectorF<NX> current_state, x_array *x_array, vectorF<NU> *mean, curandState *random_seed);
 

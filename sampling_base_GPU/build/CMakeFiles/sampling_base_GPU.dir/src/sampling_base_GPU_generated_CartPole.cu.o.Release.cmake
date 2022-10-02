@@ -58,9 +58,9 @@ endif()
 
 # Set these up as variables to make reading the generated file easier
 set(CMAKE_COMMAND "/usr/bin/cmake") # path
-set(source_file "/home/MPC_cartpole/sampling_base_GPU/src/MCMPC_CartPole.cu") # path
-set(NVCC_generated_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/sampling_base_GPU_generated_MCMPC_CartPole.cu.o.NVCC-depend") # path
-set(cmake_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/sampling_base_GPU_generated_MCMPC_CartPole.cu.o.depend") # path
+set(source_file "/home/MPC_cartpole/sampling_base_GPU/src/CartPole.cu") # path
+set(NVCC_generated_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/sampling_base_GPU_generated_CartPole.cu.o.NVCC-depend") # path
+set(cmake_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/sampling_base_GPU_generated_CartPole.cu.o.depend") # path
 set(CUDA_make2cmake "/usr/share/cmake-3.16/Modules/FindCUDA/make2cmake.cmake") # path
 set(CUDA_parse_cubin "/usr/share/cmake-3.16/Modules/FindCUDA/parse_cubin.cmake") # path
 set(build_cubin OFF) # bool
@@ -68,8 +68,8 @@ set(CUDA_HOST_COMPILER "/usr/bin/cc") # path
 # We won't actually use these variables for now, but we need to set this, in
 # order to force this file to be run again if it changes.
 set(generated_file_path "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/.") # path
-set(generated_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/./sampling_base_GPU_generated_MCMPC_CartPole.cu.o") # path
-set(generated_cubin_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/./sampling_base_GPU_generated_MCMPC_CartPole.cu.o.cubin.txt") # path
+set(generated_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/./sampling_base_GPU_generated_CartPole.cu.o") # path
+set(generated_cubin_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/./sampling_base_GPU_generated_CartPole.cu.o.cubin.txt") # path
 
 set(CUDA_NVCC_EXECUTABLE "/usr/local/cuda/bin/nvcc") # path
 set(CUDA_NVCC_FLAGS  ;; ) # list

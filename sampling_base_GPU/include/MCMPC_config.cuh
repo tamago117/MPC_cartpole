@@ -7,7 +7,7 @@ const int NU = 1; // input = v
 const int HORIZONS = 40;          // horizon length
 const int ITERATIONS = 3;        // iteration number
 const float ITERATION_TH = 0.5;   // convergence value
-const int INPUT_THREADS_NUM = 4000; // mcmpc : input threads(500~(5000))
+const int INPUT_THREADS_NUM = 5000; // mcmpc : input threads(500~(5000))
 const int TOP_INPUTS_NUM = INPUT_THREADS_NUM/100;        // mcmpc : cost lower inputs
 const float X_MAX = 0.3;
 const float max_INPUT = 25;

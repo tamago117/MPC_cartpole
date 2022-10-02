@@ -9,6 +9,12 @@
 #include "MCMPC_CartPole.cuh"
 #include "MCMPC_config.cuh"
 
+// cuda device constant
+__constant__ int d_NX, d_NU;
+__constant__ int d_HORIZONS, d_INPUT_THREADS_NUM, d_TOP_INPUTS_NUM;
+__constant__ float d_DT, d_ITERATION_TH, d_max_INPUT, d_X_MAX, d_COST_OVER_VALUE;
+__constant__ MCMPC_config d_config;
+
 unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block)
 {
     unsigned int num;
@@ -19,7 +25,7 @@ unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block)
     return num;
 }
 
-__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt)
+/*__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt)
 {
     const float cart_mass = 2.0;
     const float pole_mass = 0.2;
@@ -45,7 +51,7 @@ __device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, f
     next_x.vector[3] = dtheta + ddtheta*dt;
 
     return next_x;
-}
+}*/
 
 __device__ float GenerateRadomInput(curandState *random_seed, unsigned int id, float mean, float variance)
 {
@@ -82,7 +88,7 @@ __global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array
             }
 
             // input -> state
-            x_array[id].x[horizon + 1] = dynamics(x_array[id].x[horizon], u_array[id].u[horizon], d_DT);
+            x_array[id].x[horizon + 1] = CartPole::dynamics(x_array[id].x[horizon], u_array[id].u[horizon], d_DT);
 
             seq += d_INPUT_THREADS_NUM;
         }
@@ -90,7 +96,7 @@ __global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array
         // last input
         u_array[id].u[d_HORIZONS - 1] = u_array[id].u[d_HORIZONS - 2];
         // last : input -> state
-        x_array[id].x[d_HORIZONS] = dynamics(x_array[id].x[d_HORIZONS - 1], u_array[id].u[d_HORIZONS - 1], d_DT);
+        x_array[id].x[d_HORIZONS] = CartPole::dynamics(x_array[id].x[d_HORIZONS - 1], u_array[id].u[d_HORIZONS - 1], d_DT);
 
         ///////////////////// evaluation ///////////////
         // stage cost

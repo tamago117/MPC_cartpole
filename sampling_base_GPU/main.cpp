@@ -1,6 +1,7 @@
 #include <iostream>
 #include "include/matplotlibcpp.h"
 #include "include/MCMPC_CartPole.cuh"
+#include "include/CartPole.cuh"
 #include "include/rate_analysis.hpp"
 #include "include/MCMPC_config.cuh"
 
@@ -119,7 +120,7 @@ int main()
 
         //store data history
         //static CartPole cartpole(CART_M, POLE_M, POLE_L, DT);
-        current = dynamics(current, input, DT);
+        current = CartPole::dynamics(current, input, DT);
 
         matplotlibcpp::clf();
         plot_cart(current.vector[0], current.vector[1]);

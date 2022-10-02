@@ -6,6 +6,12 @@
 
 #IncludeRegexTransform: 
 
+/home/MPC_cartpole/sampling_base_GPU/include/CartPole.cuh
+math.h
+-
+MCMPC_config.cuh
+/home/MPC_cartpole/sampling_base_GPU/include/MCMPC_config.cuh
+
 /home/MPC_cartpole/sampling_base_GPU/include/MCMPC_CartPole.cuh
 map
 -
@@ -37,6 +43,8 @@ cuda_utils.cuh
 /home/MPC_cartpole/sampling_base_GPU/include/cuda_utils.cuh
 MCMPC_config.cuh
 /home/MPC_cartpole/sampling_base_GPU/include/MCMPC_config.cuh
+CartPole.cuh
+/home/MPC_cartpole/sampling_base_GPU/include/CartPole.cuh
 
 /home/MPC_cartpole/sampling_base_GPU/include/MCMPC_config.cuh
 
@@ -89,6 +97,8 @@ include/matplotlibcpp.h
 /home/MPC_cartpole/sampling_base_GPU/include/matplotlibcpp.h
 include/MCMPC_CartPole.cuh
 /home/MPC_cartpole/sampling_base_GPU/include/MCMPC_CartPole.cuh
+include/CartPole.cuh
+/home/MPC_cartpole/sampling_base_GPU/include/CartPole.cuh
 include/rate_analysis.hpp
 /home/MPC_cartpole/sampling_base_GPU/include/rate_analysis.hpp
 include/MCMPC_config.cuh
