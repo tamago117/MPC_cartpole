@@ -40,13 +40,17 @@ private:
     float input_weight, input_diff_weight, pos_weight, angle_weight, v_weight, angleVelocity_weight;
 
     // parallel computing variable
+    
     thrust::device_vector<u_array> u_array_device;
     thrust::host_vector<u_array> u_array_host;
     thrust::device_vector<vectorF<NU>> input_list_device;
     thrust::host_vector<vectorF<NU>> input_list_host;
+    thrust::device_vector<x_array> x_array_device;
+    
     thrust::device_vector<float> cost_array_device;
     thrust::host_vector<float> cost_array_host;
-    thrust::device_vector<x_array> x_array_device;
+    thrust::device_vector<int> indices_device;
+    thrust::host_vector<int> indices_host;
 
     curandState *random_seed;
 
@@ -62,10 +66,8 @@ private:
 
 };
 
-unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block);
 // cuda functions
 //__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt);
-__global__ void SetRandomSeed(curandState *random_seed_vec, int seed);
 __global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array, const vectorF<NX> xref, const vectorF<NX> current_state, x_array *x_array, vectorF<NU> *mean, curandState *random_seed);
 
 __device__ float input_constrain(const float _input, const float lower_bound, const float upper_bound);

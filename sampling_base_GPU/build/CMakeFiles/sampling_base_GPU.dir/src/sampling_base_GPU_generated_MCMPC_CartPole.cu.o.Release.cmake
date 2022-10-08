@@ -78,8 +78,8 @@ set(CUDA_NVCC_FLAGS_RELEASE  ; )
 set(CUDA_NVCC_FLAGS_DEBUG  ; )
 set(CUDA_NVCC_FLAGS_MINSIZEREL  ; )
 set(CUDA_NVCC_FLAGS_RELWITHDEBINFO  ; )
-set(nvcc_flags -m64) # list
-set(CUDA_NVCC_INCLUDE_DIRS [==[/usr/local/cuda/include;/home/MPC_cartpole/sampling_base_GPU/include;/usr/include/python3.8;/usr/local/cuda/include]==]) # list (needs to be in lua quotes to address backslashes)
+set(nvcc_flags -m64;--std;c++11) # list
+set(CUDA_NVCC_INCLUDE_DIRS [==[/usr/local/cuda/include;/home/MPC_cartpole/sampling_base_GPU/include;/usr/include/python3.8;/home/MPC_cartpole/sampling_base_GPU/./pybind11/include;/usr/local/cuda/include]==]) # list (needs to be in lua quotes to address backslashes)
 string(REPLACE "\\" "/" CUDA_NVCC_INCLUDE_DIRS "${CUDA_NVCC_INCLUDE_DIRS}")
 set(CUDA_NVCC_COMPILE_DEFINITIONS [==[]==]) # list (needs to be in lua quotes see #16510 ).
 set(format_flag "-dc") # string
@@ -105,7 +105,7 @@ endif()
 
 # This is the list of host compilation flags.  It C or CXX should already have
 # been chosen by FindCUDA.cmake.
-set(CMAKE_HOST_FLAGS  )
+set(CMAKE_HOST_FLAGS     -w  -fPIC )
 set(CMAKE_HOST_FLAGS_RELEASE -O3 -DNDEBUG)
 set(CMAKE_HOST_FLAGS_DEBUG -g)
 set(CMAKE_HOST_FLAGS_MINSIZEREL -Os -DNDEBUG)

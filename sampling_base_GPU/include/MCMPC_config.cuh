@@ -4,12 +4,12 @@ const int NX = 4; // state = x angle v angleVel
 const int NU = 1; // input = v
 
 // mcmpc
-const int HORIZONS = 40;          // horizon length
+const int HORIZONS = 50;          // horizon length
 const int ITERATIONS = 3;        // iteration number
 const float ITERATION_TH = 0.5;   // convergence value
 const int INPUT_THREADS_NUM = 5000; // mcmpc : input threads(500~(5000))
 const int TOP_INPUTS_NUM = INPUT_THREADS_NUM/100;        // mcmpc : cost lower inputs
-const float X_MAX = 0.3;
+const float X_MAX = 1.5;
 const float max_INPUT = 25;
 const float DT = 0.02;
 const float COST_OVER_VALUE = 100;

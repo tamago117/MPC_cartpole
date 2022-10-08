@@ -1,0 +1,3 @@
+[submodule "sampling_base_GPU/pybind11"]
+	path = sampling_base_GPU/pybind11
+	url = https://github.com/pybind/pybind11

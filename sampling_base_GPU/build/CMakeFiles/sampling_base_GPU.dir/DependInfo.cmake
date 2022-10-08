@@ -12,6 +12,7 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include"
   "/usr/include/python3.8"
+  ".././pybind11/include"
   "/usr/local/cuda/include"
   )
 

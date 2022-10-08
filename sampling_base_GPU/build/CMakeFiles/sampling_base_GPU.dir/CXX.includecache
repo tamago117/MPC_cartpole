@@ -55,6 +55,10 @@ cusolverDn.h
 -
 cublas_v2.h
 -
+curand.h
+-
+curand_kernel.h
+-
 
 /home/MPC_cartpole/sampling_base_GPU/include/matplotlibcpp.h
 Python.h

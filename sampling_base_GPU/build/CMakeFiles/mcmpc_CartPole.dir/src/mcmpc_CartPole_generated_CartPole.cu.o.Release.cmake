@@ -58,31 +58,31 @@ endif()
 
 # Set these up as variables to make reading the generated file easier
 set(CMAKE_COMMAND "/usr/bin/cmake") # path
-set(source_file "/home/MPC_cartpole/sampling_base_GPU/src/MCMPC_config.cu") # path
-set(NVCC_generated_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/sampling_base_GPU_generated_MCMPC_config.cu.o.NVCC-depend") # path
-set(cmake_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/sampling_base_GPU_generated_MCMPC_config.cu.o.depend") # path
+set(source_file "/home/MPC_cartpole/sampling_base_GPU/src/CartPole.cu") # path
+set(NVCC_generated_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/mcmpc_CartPole.dir/src/mcmpc_CartPole_generated_CartPole.cu.o.NVCC-depend") # path
+set(cmake_dependency_file "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/mcmpc_CartPole.dir/src/mcmpc_CartPole_generated_CartPole.cu.o.depend") # path
 set(CUDA_make2cmake "/usr/share/cmake-3.16/Modules/FindCUDA/make2cmake.cmake") # path
 set(CUDA_parse_cubin "/usr/share/cmake-3.16/Modules/FindCUDA/parse_cubin.cmake") # path
 set(build_cubin OFF) # bool
 set(CUDA_HOST_COMPILER "/usr/bin/cc") # path
 # We won't actually use these variables for now, but we need to set this, in
 # order to force this file to be run again if it changes.
-set(generated_file_path "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/.") # path
-set(generated_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/./sampling_base_GPU_generated_MCMPC_config.cu.o") # path
-set(generated_cubin_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/sampling_base_GPU.dir/src/./sampling_base_GPU_generated_MCMPC_config.cu.o.cubin.txt") # path
+set(generated_file_path "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/mcmpc_CartPole.dir/src/.") # path
+set(generated_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/mcmpc_CartPole.dir/src/./mcmpc_CartPole_generated_CartPole.cu.o") # path
+set(generated_cubin_file_internal "/home/MPC_cartpole/sampling_base_GPU/build/CMakeFiles/mcmpc_CartPole.dir/src/./mcmpc_CartPole_generated_CartPole.cu.o.cubin.txt") # path
 
 set(CUDA_NVCC_EXECUTABLE "/usr/local/cuda/bin/nvcc") # path
-set(CUDA_NVCC_FLAGS  -dc -rdc=true ;; ) # list
+set(CUDA_NVCC_FLAGS  ;; ) # list
 # Build specific configuration flags
 set(CUDA_NVCC_FLAGS_RELEASE  ; )
 set(CUDA_NVCC_FLAGS_DEBUG  ; )
 set(CUDA_NVCC_FLAGS_MINSIZEREL  ; )
 set(CUDA_NVCC_FLAGS_RELWITHDEBINFO  ; )
-set(nvcc_flags -m64) # list
-set(CUDA_NVCC_INCLUDE_DIRS [==[/usr/local/cuda/include;/home/MPC_cartpole/sampling_base_GPU/include;/usr/include/python3.8;/usr/local/cuda/include]==]) # list (needs to be in lua quotes to address backslashes)
+set(nvcc_flags -m64;--std;c++11;-Dmcmpc_CartPole_EXPORTS) # list
+set(CUDA_NVCC_INCLUDE_DIRS [==[/usr/local/cuda/include;/home/MPC_cartpole/sampling_base_GPU/include;/usr/include/python3.8;/home/MPC_cartpole/sampling_base_GPU/./pybind11/include;/usr/local/cuda/include]==]) # list (needs to be in lua quotes to address backslashes)
 string(REPLACE "\\" "/" CUDA_NVCC_INCLUDE_DIRS "${CUDA_NVCC_INCLUDE_DIRS}")
 set(CUDA_NVCC_COMPILE_DEFINITIONS [==[]==]) # list (needs to be in lua quotes see #16510 ).
-set(format_flag "-c") # string
+set(format_flag "-dc") # string
 set(cuda_language_flag ) # list
 
 # Clean up list of include directories and add -I flags
@@ -105,7 +105,7 @@ endif()
 
 # This is the list of host compilation flags.  It C or CXX should already have
 # been chosen by FindCUDA.cmake.
-set(CMAKE_HOST_FLAGS  )
+set(CMAKE_HOST_FLAGS     -w  -fPIC -fPIC)
 set(CMAKE_HOST_FLAGS_RELEASE -O3 -DNDEBUG)
 set(CMAKE_HOST_FLAGS_DEBUG -g)
 set(CMAKE_HOST_FLAGS_MINSIZEREL -Os -DNDEBUG)

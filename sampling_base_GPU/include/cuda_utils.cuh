@@ -2,6 +2,8 @@
 #include <cuda.h>
 #include <cusolverDn.h>
 #include <cublas_v2.h>
+#include <curand.h>
+#include <curand_kernel.h>
 
 #define CHECK(call)                                                  \
 {                                                                    \
@@ -30,3 +32,6 @@
         exit(1);                                                                      \
     }                                                                                 \
 }
+
+unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block);
+__global__ void SetRandomSeed(curandState *random_seed_vec, int seed);

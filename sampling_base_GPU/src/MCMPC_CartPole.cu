@@ -15,58 +15,13 @@ __constant__ int d_HORIZONS, d_INPUT_THREADS_NUM, d_TOP_INPUTS_NUM;
 __constant__ float d_DT, d_ITERATION_TH, d_max_INPUT, d_X_MAX, d_COST_OVER_VALUE;
 __constant__ MCMPC_config d_config;
 
-unsigned int CountBlocks(unsigned int thread_num, unsigned int thread_per_block)
-{
-    unsigned int num;
-    num = thread_num / thread_per_block;
-    if (thread_num < thread_per_block || thread_num % thread_per_block > 0){
-        num++;
-    }
-    return num;
-}
-
-/*__device__ __host__ vectorF<NX> dynamics(vectorF<NX> x_vec, vectorF<NU> u_vec, float dt)
-{
-    const float cart_mass = 2.0;
-    const float pole_mass = 0.2;
-    const float pole_length = 0.5;
-    const float gravity = 9.81;
-
-    vectorF<4> next_x;
-
-    float x = x_vec.vector[0]; // cart position[m]
-    float theta = x_vec.vector[1]; // pole angle[rad]
-    float dx = x_vec.vector[2]; // cart velocity[m/s]
-    float dtheta = x_vec.vector[3]; // pole angle velocity[rad/s]
-    float f = u_vec.vector[0]; //input[N]
-
-    // cart acceleration
-    float ddx = (f+pole_mass*sin(theta)*(pole_length*dtheta*dtheta + gravity*cos(theta)))/(cart_mass+pole_mass*sin(theta)*sin(theta));
-
-    float ddtheta = (-f*cos(theta)-pole_mass*pole_length*dtheta*dtheta*cos(theta)*sin(theta) - (cart_mass+pole_mass)*gravity*sin(theta))/(pole_length*(cart_mass+pole_mass*sin(theta)*sin(theta)));
-
-    next_x.vector[0] = x + dx*dt;
-    next_x.vector[1] = theta + dtheta*dt;
-    next_x.vector[2] = dx + ddx*dt;
-    next_x.vector[3] = dtheta + ddtheta*dt;
-
-    return next_x;
-}*/
-
 __device__ float GenerateRadomInput(curandState *random_seed, unsigned int id, float mean, float variance)
 {
     float ret_value;
     curandState local_seed;
     local_seed = random_seed[id];
     ret_value = curand_normal(&local_seed) * variance + mean;
-    //printf("%d %f %f %f\n",id, mean, variance, ret_value);
     return ret_value;
-}
-
-__global__ void SetRandomSeed(curandState *random_seed_vec, int seed)
-{
-    unsigned int id = threadIdx.x + blockIdx.x * blockDim.x;
-    curand_init(seed, id, 0, &random_seed_vec[id]);
 }
 
 __global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array, const vectorF<NX> xref, const vectorF<NX> current_state, x_array *x_array, vectorF<NU> *mean, curandState *random_seed)
@@ -178,20 +133,25 @@ MCMPC_CartPole::MCMPC_CartPole()
     */
 
     //thrust initialize
-    thrust::device_vector<float> cost_array_device_(INPUT_THREADS_NUM);
-    thrust::host_vector<float> cost_array_host_(INPUT_THREADS_NUM);
     thrust::device_vector<vectorF<NU>> input_list_device_(HORIZONS);
     thrust::host_vector<vectorF<NU>> input_list_host_(HORIZONS);
     thrust::device_vector<u_array> u_array_device_(INPUT_THREADS_NUM);
     thrust::host_vector<u_array> u_array_host_(INPUT_THREADS_NUM);
     thrust::device_vector<x_array> x_array_device_(INPUT_THREADS_NUM);
-    cost_array_device = cost_array_device_;
-    cost_array_host = cost_array_host_;
+    thrust::device_vector<float> cost_array_device_(INPUT_THREADS_NUM);
+    thrust::host_vector<float> cost_array_host_(INPUT_THREADS_NUM);
+    thrust::device_vector<int> indices_device_(INPUT_THREADS_NUM);
+    thrust::host_vector<int> indices_host_(INPUT_THREADS_NUM);
+
     input_list_device = input_list_device_;
     input_list_host = input_list_host_;
     u_array_device = u_array_device_;
     u_array_host = u_array_host_;
     x_array_device = x_array_device_;
+    cost_array_device = cost_array_device_;
+    cost_array_host = cost_array_host_;
+    indices_device = indices_device_;
+    indices_host = indices_host_;
 
     //curand initialize
     float num_random_seed = INPUT_THREADS_NUM * (NU + 1) * HORIZONS;
@@ -237,7 +197,8 @@ vectorF<NU> MCMPC_CartPole::solve(const vectorF<NX> &target_state, const vectorF
 
         CHECK(cudaDeviceSynchronize());
 
-        thrust::sort_by_key(cost_array_device.begin(), cost_array_device.end(), u_array_device.begin());
+        thrust::sequence(indices_device.begin(), indices_device.end());
+        thrust::sort_by_key(cost_array_device.begin(), cost_array_device.end(), indices_device.begin());
         CHECK(cudaDeviceSynchronize());
 
         //calculate sum of weight by thrust
@@ -245,18 +206,27 @@ vectorF<NU> MCMPC_CartPole::solve(const vectorF<NX> &target_state, const vectorF
 
         thrust::copy(u_array_device.begin(), u_array_device.end(), u_array_host.begin());
         thrust::copy(cost_array_device.begin(), cost_array_device.end(), cost_array_host.begin());
+        thrust::copy(indices_device.begin(), indices_device.end(), indices_host.begin());
         CHECK(cudaDeviceSynchronize());
 
         float denom = 0;
         for (int j = 0; j < TOP_INPUTS_NUM; ++j){
-            denom += std::exp(-cost_array_host[j] / lam);
+            //denom += std::exp(-cost_array_host[j] / lam);
+            int array_index = indices_host[j];
+            denom += std::exp(-cost_array_host[array_index] / lam);
         }
         for (int horizon = 0; horizon < HORIZONS; ++horizon){
             vectorF<NU> molecule;
+            //variable initialize
+            for (int input_dim = 0; input_dim < NU; input_dim++){
+                molecule.vector[input_dim] = 0;
+            }
+
             molecule.vector[0] = 0;
             for (int j = 0; j < TOP_INPUTS_NUM; ++j){
+                int array_index = indices_host[j];
                 for(int input_dim = 0; input_dim < NU; input_dim++){
-                    molecule.vector[input_dim] += std::exp(-cost_array_host[j]/lam) * u_array_host[j].u[horizon].vector[input_dim];
+                    molecule.vector[input_dim] += std::exp(-cost_array_host[array_index]/lam) * u_array_host[array_index].u[horizon].vector[input_dim];
                 }
             }
             vectorF<NU> result;
@@ -271,7 +241,7 @@ vectorF<NU> MCMPC_CartPole::solve(const vectorF<NX> &target_state, const vectorF
         input_result = input_list_host[0];
 
 
-
+        // iteration check
         float du = 0;
         for (int j = 0; j < HORIZONS; ++j){
             for(int input_dim = 0; input_dim < NU; input_dim++){
