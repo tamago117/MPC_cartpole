@@ -30,7 +30,7 @@ def main():
 
     textColor = [1, 1, 1]
     shift = 0.05
-    p.addUserDebugText("MPC", [shift, 0, .1],
+    p.addUserDebugText("MCMPC", [shift, 0, .1],
                     textColor,
                     parentObjectUniqueId=cartpole,
                     parentLinkIndex=1)

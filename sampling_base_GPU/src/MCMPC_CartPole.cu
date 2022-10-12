@@ -75,8 +75,8 @@ __global__ void ParallelMonteCarloSimulation(u_array *u_array, float *cost_array
 
         ///////////////////////////////////////////////
 
-        /////////////////// state constrain ///////s//////
-        for (int horizon = 0; horizon < d_HORIZONS; ++horizon){
+        /////////////////// state constrain /////////////
+        for (int horizon = 0; horizon < d_HORIZONS+1; ++horizon){
             for(int state_dim = 0; state_dim < d_NX; ++state_dim){
                 cost_array[id] += state_constrain(x_array[id].x[horizon].vector[state_dim], d_config.LOWER_STATE[state_dim], d_config.UPPER_STATE[state_dim]);
             }
@@ -166,7 +166,6 @@ MCMPC_CartPole::MCMPC_CartPole()
     cudaMemcpyToSymbol(d_INPUT_THREADS_NUM, &INPUT_THREADS_NUM, sizeof(int));
     cudaMemcpyToSymbol(d_TOP_INPUTS_NUM, &TOP_INPUTS_NUM, sizeof(int));
     cudaMemcpyToSymbol(d_DT, &DT, sizeof(float));
-    cudaMemcpyToSymbol(d_ITERATION_TH, &ITERATION_TH, sizeof(float));
     cudaMemcpyToSymbol(d_max_INPUT, &max_INPUT, sizeof(float));
     cudaMemcpyToSymbol(d_X_MAX, &X_MAX, sizeof(float));
     cudaMemcpyToSymbol(d_COST_OVER_VALUE, &COST_OVER_VALUE, sizeof(float));
@@ -183,6 +182,7 @@ vectorF<NU> MCMPC_CartPole::solve(const vectorF<NX> &target_state, const vectorF
     //initialize
     vectorF<NU> input_result;
     thrust::host_vector<vectorF<NU>> pre_input_list;
+    float pre_cost = INFINITY;
 
 
     // repeat calculations for output accuracy
@@ -211,9 +211,7 @@ vectorF<NU> MCMPC_CartPole::solve(const vectorF<NX> &target_state, const vectorF
 
         float denom = 0;
         for (int j = 0; j < TOP_INPUTS_NUM; ++j){
-            //denom += std::exp(-cost_array_host[j] / lam);
-            int array_index = indices_host[j];
-            denom += std::exp(-cost_array_host[array_index] / lam);
+            denom += std::exp(-cost_array_host[j] / lam);
         }
         for (int horizon = 0; horizon < HORIZONS; ++horizon){
             vectorF<NU> molecule;
@@ -226,31 +224,27 @@ vectorF<NU> MCMPC_CartPole::solve(const vectorF<NX> &target_state, const vectorF
             for (int j = 0; j < TOP_INPUTS_NUM; ++j){
                 int array_index = indices_host[j];
                 for(int input_dim = 0; input_dim < NU; input_dim++){
-                    molecule.vector[input_dim] += std::exp(-cost_array_host[array_index]/lam) * u_array_host[array_index].u[horizon].vector[input_dim];
+                    molecule.vector[input_dim] += std::exp(-cost_array_host[j]/lam) * u_array_host[array_index].u[horizon].vector[input_dim];
                 }
             }
             vectorF<NU> result;
             for(int input_dim = 0; input_dim < NU; ++input_dim){
                 result.vector[input_dim] = molecule.vector[input_dim] / denom;
             }
-            //std::cout<<result.vector[0]<<" ";
             input_list_host[horizon] = result;
         }
 
-        std::cout << "min cost : " << cost_array_host.front() << std::endl;
-        input_result = input_list_host[0];
+        float min_cost = cost_array_host.front();
 
 
         // iteration check
-        float du = 0;
-        for (int j = 0; j < HORIZONS; ++j){
-            for(int input_dim = 0; input_dim < NU; input_dim++){
-                du += std::abs(input_list_host[j].vector[input_dim] - pre_input_list[j].vector[input_dim]);
-            }
-        }
-        if (du < ITERATION_TH)
-        {
-            break;
+        if(min_cost<pre_cost){
+            pre_cost = min_cost;
+            std::cout << "min cost : " << min_cost << std::endl;
+            input_result = input_list_host[0];
+        }else{
+            input_list_host = pre_input_list;
+            input_result = input_list_host[0];
         }
     }
 
