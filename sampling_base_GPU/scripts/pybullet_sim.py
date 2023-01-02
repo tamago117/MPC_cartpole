@@ -10,7 +10,7 @@ import mcmpc_CartPole
 sampling_time = 0.01 # 100hz
 T = 100 # horizon
 
-max_input = 35
+max_input = 25
 x_max = 2.0
 
 def main():

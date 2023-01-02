@@ -43,7 +43,7 @@
 #define CART_POLE_NZ     0
 #define CART_POLE_NU     1
 #define CART_POLE_NP     0
-#define CART_POLE_NBX    0
+#define CART_POLE_NBX    1
 #define CART_POLE_NBX0   4
 #define CART_POLE_NBU    1
 #define CART_POLE_NSBX   0
@@ -63,7 +63,7 @@
 #define CART_POLE_NY0    5
 #define CART_POLE_NY     5
 #define CART_POLE_NYN    4
-#define CART_POLE_N      20
+#define CART_POLE_N      100
 #define CART_POLE_NH     0
 #define CART_POLE_NPHI   0
 #define CART_POLE_NHN    0
